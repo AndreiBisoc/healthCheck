@@ -10,6 +10,7 @@ import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import { useHistory } from "react-router-dom";
+import { register } from "../API";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -46,7 +47,6 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Register() {
   const classes = useStyles();
-  const API_URL = "http://localhost:4000";
   const [passwordLengthError, setPasswordLengthError] = React.useState(null);
   const [passwordMatchError, setPasswordMatchError] = React.useState(null);
   const [
@@ -80,14 +80,7 @@ export default function Register() {
     setEmailAlreadyRegisteredError(null);
     validatePassword(user.password, user.confirmPassword);
 
-    const response = await fetch(`${API_URL}/users/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-    });
-    const jsonResponse = await response.json();
+    const jsonResponse = await register(user);
     if (jsonResponse.status === 401) {
       setEmailAlreadyRegisteredError(jsonResponse.message);
     } else if (jsonResponse.status === 200) {
