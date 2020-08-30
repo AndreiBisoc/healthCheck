@@ -9,6 +9,7 @@ import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
+import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,6 +53,17 @@ export default function Register() {
     emailAlreadyRegisteredError,
     setEmailAlreadyRegisteredError,
   ] = React.useState(null);
+  const history = useHistory();
+
+  const validatePassword = (password, confirmPassword) => {
+    if (password && password.length < 6) {
+      setPasswordLengthError("Password must be at least 6 characters.");
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordMatchError("Passwords do not match.");
+    }
+  };
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
@@ -75,20 +87,11 @@ export default function Register() {
       },
       body: JSON.stringify(user),
     });
-    console.log(response);
     const jsonResponse = await response.json();
     if (jsonResponse.status === 401) {
       setEmailAlreadyRegisteredError(jsonResponse.message);
-    }
-  };
-
-  const validatePassword = (password, confirmPassword) => {
-    if (password && password.length < 6) {
-      setPasswordLengthError("Password must be at least 6 characters.");
-    }
-
-    if (password !== confirmPassword) {
-      setPasswordMatchError("Passwords do not match.");
+    } else if (jsonResponse.status === 200) {
+      history.push("/");
     }
   };
   return (

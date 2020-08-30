@@ -20,6 +20,8 @@ app.use(
   })
 );
 
+app.use(flash());
+
 app.get("/", (req, res) => {
   res.send("1");
   console.log("haha");
@@ -37,10 +39,21 @@ app.post("/users/register", async (req, res) => {
       if (err) {
         throw err;
       }
-      console.log(results.rows);
       if (results.rows.length > 0) {
-        // res.send("Email already registered");
         res.json({ status: 401, message: "Email already registered" });
+      } else {
+        pool.query(
+          `INSERT INTO users (first_name, last_name, email, password)
+          VALUES ($1, $2, $3, $4)
+          RETURNING id, password`,
+          [firstName, lastName, email, hashedPassword],
+          (err, results) => {
+            if (err) {
+              throw err;
+            }
+          }
+        );
+        res.json({ status: 200, message: "You are now registered. Please log in." });
       }
     }
   );
