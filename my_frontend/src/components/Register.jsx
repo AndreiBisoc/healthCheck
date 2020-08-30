@@ -45,7 +45,52 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Register() {
   const classes = useStyles();
+  const API_URL = "http://localhost:4000";
+  const [passwordLengthError, setPasswordLengthError] = React.useState(null);
+  const [passwordMatchError, setPasswordMatchError] = React.useState(null);
+  const [
+    emailAlreadyRegisteredError,
+    setEmailAlreadyRegisteredError,
+  ] = React.useState(null);
 
+  const handleOnSubmit = async (e) => {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    const user = {
+      firstName: data.get("firstName").toString(),
+      lastName: data.get("lastName").toString(),
+      email: data.get("email").toString(),
+      password: data.get("password").toString(),
+      confirmPassword: data.get("confirmPassword").toString(),
+    };
+    setPasswordLengthError(null);
+    setPasswordMatchError(null);
+    setEmailAlreadyRegisteredError(null);
+    validatePassword(user.password, user.confirmPassword);
+
+    const response = await fetch(`${API_URL}/users/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(user),
+    });
+    console.log(response);
+    const jsonResponse = await response.json();
+    if (jsonResponse.status === 401) {
+      setEmailAlreadyRegisteredError(jsonResponse.message);
+    }
+  };
+
+  const validatePassword = (password, confirmPassword) => {
+    if (password && password.length < 6) {
+      setPasswordLengthError("Password must be at least 6 characters.");
+    }
+
+    if (password !== confirmPassword) {
+      setPasswordMatchError("Passwords do not match.");
+    }
+  };
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
@@ -58,7 +103,11 @@ export default function Register() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <form className={classes.form} action="/users/register" method="POST">
+          <form
+            className={classes.form}
+            onSubmit={handleOnSubmit}
+            method="POST"
+          >
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <TextField
@@ -85,6 +134,8 @@ export default function Register() {
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  error={emailAlreadyRegisteredError && true}
+                  helperText={emailAlreadyRegisteredError}
                   variant="outlined"
                   required
                   fullWidth
@@ -96,6 +147,8 @@ export default function Register() {
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  error={(passwordLengthError || passwordMatchError) && true}
+                  helperText={passwordLengthError}
                   variant="outlined"
                   required
                   fullWidth
@@ -108,13 +161,15 @@ export default function Register() {
               </Grid>
               <Grid item xs={12}>
                 <TextField
+                  error={passwordMatchError && true}
+                  helperText={passwordMatchError}
                   variant="outlined"
                   required
                   fullWidth
-                  name="confirm-password"
+                  name="confirmPassword"
                   label="Confirm Password"
                   type="password"
-                  id="confirm-password"
+                  id="confirmPassword"
                   autoComplete="current-password"
                 />
               </Grid>
