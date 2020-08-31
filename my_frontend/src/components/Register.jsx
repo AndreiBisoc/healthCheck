@@ -67,6 +67,7 @@ export default function Register() {
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
+    
     const data = new FormData(e.target);
     const user = {
       firstName: data.get("firstName").toString(),
@@ -102,7 +103,6 @@ export default function Register() {
           <form
             className={classes.form}
             onSubmit={handleOnSubmit}
-            method="POST"
           >
             <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>

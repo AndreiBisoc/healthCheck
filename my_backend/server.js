@@ -6,6 +6,9 @@ const PORT = process.env.PORT || 4000;
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const flash = require("express-flash");
+const passport = require("passport");
+
+const initializePassport = require("./passportConfig");
 
 app.use(cors());
 
@@ -20,12 +23,19 @@ app.use(
   })
 );
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(flash());
+initializePassport(passport);
 
 app.get("/", (req, res) => {
-  res.send("1");
-  console.log("haha");
+  res.send("okay");
 });
+
+app.get("/users/health", (req, res) => {
+  pool.query
+})
 
 app.post("/users/register", async (req, res) => {
   let { firstName, lastName, email, password, confirmPassword } = req.body;
@@ -53,11 +63,42 @@ app.post("/users/register", async (req, res) => {
             }
           }
         );
-        res.json({ status: 200, message: "You are now registered. Please log in." });
+
+          
+
+        res.json({
+          status: 200,
+          message: "You are now registered. Please log in.",
+        });
       }
     }
   );
 });
+
+app.post("/users/login", passport.authenticate("local"), (req, res) => {
+  res.json({
+    status: 200,
+    message: "You are now logged in.",
+  });
+});
+
+app.get("/users/logout", (req, res) => {
+  req.logOut();
+  res.json({
+    status: 200,
+    message: "You are now logged out.",
+  });
+})
+
+function checkAuthenticated(req, res, next) {
+  if(req.isAuthenticated()){
+    res.json({
+      status: 300,
+      message: "User authenticated",
+    });
+  }
+  next();
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

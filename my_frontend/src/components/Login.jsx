@@ -11,6 +11,9 @@ import Grid from "@material-ui/core/Grid";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import Typography from "@material-ui/core/Typography";
 import { makeStyles } from "@material-ui/core/styles";
+import { login } from "../API";
+import { useHistory } from "react-router-dom";
+import Snackbar from "@material-ui/core/Snackbar";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -47,12 +50,51 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Login() {
   const classes = useStyles();
+  const history = useHistory();
+  const [isLogoutAlertOpen, setIsLogoutAlertOpen] = React.useState(false);
 
+  React.useEffect(() => {
+    if (history.action === "PUSH") {
+      setIsLogoutAlertOpen(true);
+    }
+  }, []);
+
+  const handleOnSubmit = async (e) => {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+    const user = {
+      email: data.get("email").toString(),
+      password: data.get("password").toString(),
+    };
+
+    const jsonResponse = await login(user);
+    if (jsonResponse.status === 200) {
+      history.push("/dashboard");
+    }
+  };
+
+  const logoutAlert = () => {
+    const vertical = "bottom";
+    const horizontal = "right";
+    return isLogoutAlertOpen ? (
+      <div>
+        <Snackbar
+          anchorOrigin={{ vertical, horizontal }}
+          open={isLogoutAlertOpen}
+          onClose={(e) => setIsLogoutAlertOpen(false)}
+          message="You are now logged out"
+          key={vertical + horizontal}
+        />
+      </div>
+    ) : null;
+  };
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+        {logoutAlert()}
         <div className={classes.paper}>
           <Avatar className={classes.avatar}>
             <LockOutlinedIcon />
@@ -60,7 +102,7 @@ export default function Login() {
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-          <form className={classes.form} noValidate>
+          <form className={classes.form} noValidate onSubmit={handleOnSubmit}>
             <TextField
               variant="outlined"
               margin="normal"
@@ -96,10 +138,10 @@ export default function Login() {
             >
               Sign In
             </Button>
-              <Grid item>
-                <Link href="/register" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
+            <Grid item>
+              <Link href="/register" variant="body2">
+                {"Don't have an account? Sign Up"}
+              </Link>
             </Grid>
           </form>
         </div>
