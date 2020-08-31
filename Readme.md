@@ -23,10 +23,7 @@ Pentru deployment am incercat crearea unei instante de docker-compose care sa po
     - Una de Nginx.
 Instanta de Node.js nu porneste.
 Local, aplicatia backend ruleaza pe portul 4000 iar aplicatia frontend ruleaza pe portul 3000. (http://localhost:3000)
+Pentru pornirea aplicatiei local, trebuie executat npm start atat in folderul my_frontend cat si in my_backend.
 
 
 In dezvoltarea aplicatiei, am folosit git. Repository-ul poate fi gasit la: https://github.com/AndreiBisoc/healthCheck
-
-
-		
-
