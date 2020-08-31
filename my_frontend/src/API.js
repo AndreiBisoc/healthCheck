@@ -46,6 +46,5 @@ export const healthCheck = async (email) => {
     },
   });
 
-//   const jsonResponse = await response.json();
   return response;
 };

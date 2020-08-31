@@ -1,0 +1,20 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: Andrei
+      POSTGRES_DATABASE: healthCheck
+      POSTGRES_PASSWORD: password
+
+  server:
+    image: node
+    command: npm start
+    ports:
+      - 4001:4001
+
+  web:
+    image: nginx
+    ports:
+      - 3001:3001
