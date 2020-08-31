@@ -115,16 +115,6 @@ app.get("/users/logout", (req, res) => {
   });
 });
 
-function checkAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-    res.json({
-      status: 300,
-      message: "User authenticated",
-    });
-  }
-  next();
-}
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
