@@ -67,7 +67,7 @@ export default function Register() {
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
-    
+
     const data = new FormData(e.target);
     const user = {
       firstName: data.get("firstName").toString(),
@@ -85,7 +85,7 @@ export default function Register() {
     if (jsonResponse.status === 401) {
       setEmailAlreadyRegisteredError(jsonResponse.message);
     } else if (jsonResponse.status === 200) {
-      history.push("/");
+      history.push("/", "register");
     }
   };
   return (

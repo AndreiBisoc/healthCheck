@@ -3,17 +3,15 @@ import Avatar from "@material-ui/core/Avatar";
 import Button from "@material-ui/core/Button";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import TextField from "@material-ui/core/TextField";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-import Link from "@material-ui/core/Link";
 import Paper from "@material-ui/core/Paper";
 import Grid from "@material-ui/core/Grid";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
-import { logout } from "../API";
+import { logout, healthCheck } from "../API";
 import { useHistory } from "react-router-dom";
 import Snackbar from "@material-ui/core/Snackbar";
+import LinearProgress from "@material-ui/core/LinearProgress";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -52,19 +50,44 @@ export default function Dashboard() {
   const classes = useStyles();
   const history = useHistory();
   const [isLoginAlertOpen, setIsLoginAlertOpen] = React.useState(false);
+  const [health, setHealth] = React.useState(null);
+  const [isSpinnerActive, setIsSpinnerActive] = React.useState(false);
 
   React.useEffect(() => {
+    const user_email = localStorage.getItem("user_email");
+    if (user_email === null) {
+      history.push("/");
+    }
+    const callHealthCheck = async () => {
+      const response = await healthCheck(user_email);
+      if (!response.ok) {
+        setIsSpinnerActive(true);
+      }
+    };
+    callHealthCheck();
     if (history.action === "PUSH") {
       setIsLoginAlertOpen(true);
     }
-  }, []);
+  }, [history]);
 
   const handleLogout = async (e) => {
     e.preventDefault();
 
     const jsonResponse = await logout();
     if (jsonResponse.status === 200) {
-      history.push("/");
+      localStorage.removeItem("user_email");
+      history.push("/", "logout");
+    }
+  };
+
+  const handleHealthCheck = async (e) => {
+    e.preventDefault();
+    const email = localStorage.getItem("user_email");
+
+    const response = await healthCheck(email);
+    const jsonResponse = await response.json();
+    if (jsonResponse.status === 302) {
+      setHealth(jsonResponse.health);
     }
   };
 
@@ -83,6 +106,8 @@ export default function Dashboard() {
       </div>
     ) : null;
   };
+
+  if (isSpinnerActive) return <LinearProgress />;
   return (
     <Grid container component="main" className={classes.root}>
       <CssBaseline />
@@ -98,6 +123,7 @@ export default function Dashboard() {
           </Typography>
 
           <Button
+            onClick={handleHealthCheck}
             variant="contained"
             color="primary"
             className={classes.submit}
@@ -108,7 +134,7 @@ export default function Dashboard() {
             fullWidth
             disabled
             id="outlined-basic"
-            label="Health level"
+            value={`Health level${health !== null ? `: ${health}` : ""}`}
             variant="outlined"
           />
         </div>

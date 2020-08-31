@@ -51,13 +51,16 @@ const useStyles = makeStyles((theme) => ({
 export default function Login() {
   const classes = useStyles();
   const history = useHistory();
-  const [isLogoutAlertOpen, setIsLogoutAlertOpen] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState(null);
 
   React.useEffect(() => {
     if (history.action === "PUSH") {
-      setIsLogoutAlertOpen(true);
+      if (history.location.state === "logout")
+        setAlertMessage("You have logged out");
+      if (history.location.state === "register")
+        setAlertMessage("You are now registered. Please log in.");
     }
-  }, []);
+  }, [history]);
 
   const handleOnSubmit = async (e) => {
     e.preventDefault();
@@ -70,23 +73,22 @@ export default function Login() {
 
     const jsonResponse = await login(user);
     if (jsonResponse.status === 200) {
+      localStorage.setItem("user_email", user.email);
       history.push("/dashboard");
     }
   };
 
-  const logoutAlert = () => {
+  const alert = () => {
     const vertical = "bottom";
     const horizontal = "right";
-    return isLogoutAlertOpen ? (
-      <div>
-        <Snackbar
-          anchorOrigin={{ vertical, horizontal }}
-          open={isLogoutAlertOpen}
-          onClose={(e) => setIsLogoutAlertOpen(false)}
-          message="You are now logged out"
-          key={vertical + horizontal}
-        />
-      </div>
+    return alertMessage ? (
+      <Snackbar
+        anchorOrigin={{ vertical, horizontal }}
+        open={alertMessage !== null}
+        onClose={(e) => setAlertMessage(null)}
+        message={alertMessage}
+        key={vertical + horizontal}
+      />
     ) : null;
   };
   return (
@@ -94,8 +96,8 @@ export default function Login() {
       <CssBaseline />
       <Grid item xs={false} sm={4} md={7} className={classes.image} />
       <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
-        {logoutAlert()}
         <div className={classes.paper}>
+          {alert()}
           <Avatar className={classes.avatar}>
             <LockOutlinedIcon />
           </Avatar>

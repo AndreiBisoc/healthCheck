@@ -37,3 +37,15 @@ export const logout = async () => {
   const jsonResponse = await response.json();
   return jsonResponse;
 };
+
+export const healthCheck = async (email) => {
+  const response = await fetch(`${API_URL}/health/${email}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+//   const jsonResponse = await response.json();
+  return response;
+};

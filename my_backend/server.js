@@ -33,9 +33,23 @@ app.get("/", (req, res) => {
   res.send("okay");
 });
 
-app.get("/users/health", (req, res) => {
-  pool.query
-})
+app.get("/users/health/:email", (req, res) => {
+  const email = req.params.email;
+  pool.query(
+    `SELECT h.health
+		  FROM health AS h, users AS u
+	    WHERE h.user_id = u.id AND email = $1`,
+    [email],
+    (err, results) => {
+      if (err) {
+        throw err;
+      }
+      if (results.rows.length > 0) {
+        res.json({ status: 302, health: results.rows[0].health });
+      }
+    }
+  );
+});
 
 app.post("/users/register", async (req, res) => {
   let { firstName, lastName, email, password, confirmPassword } = req.body;
@@ -52,6 +66,7 @@ app.post("/users/register", async (req, res) => {
       if (results.rows.length > 0) {
         res.json({ status: 401, message: "Email already registered" });
       } else {
+        let user_id;
         pool.query(
           `INSERT INTO users (first_name, last_name, email, password)
           VALUES ($1, $2, $3, $4)
@@ -61,10 +76,20 @@ app.post("/users/register", async (req, res) => {
             if (err) {
               throw err;
             }
+            user_id = results.rows[0].id;
+
+            pool.query(
+              `INSERT INTO health (user_id, health)
+              VALUES ($1, $2)`,
+              [user_id, 100],
+              (err, results) => {
+                if (err) {
+                  throw err;
+                }
+              }
+            );
           }
         );
-
-          
 
         res.json({
           status: 200,
@@ -88,10 +113,10 @@ app.get("/users/logout", (req, res) => {
     status: 200,
     message: "You are now logged out.",
   });
-})
+});
 
 function checkAuthenticated(req, res, next) {
-  if(req.isAuthenticated()){
+  if (req.isAuthenticated()) {
     res.json({
       status: 300,
       message: "User authenticated",
